@@ -1,0 +1,102 @@
+import requests
+from datetime import datetime
+
+# Replace 'YOUR_API_KEY' with your actual API key
+API_KEY = 'YOUR_API_KEY'
+BASE_URL = 'https://samples.openweathermap.org/data/2.5/forecast/hourly?q=London,us&appid=b6907d289e10d714a6e88b30761fae22'
+
+
+def get_weather_data() :
+    city = 'London'  # You can change the city if needed
+    params = {
+        'q' : city,
+        'appid' : API_KEY
+    }
+    response = requests.get(BASE_URL, params=params)
+    if response.status_code == 200 :
+        return response.json()
+    else :
+        print("Error fetching weather data.")
+        return None
+
+
+def get_closest_forecast(date_time, data) :
+    target_time = datetime.strptime(date_time, '%Y-%m-%d %H:%M:%S')
+
+    for forecast in data['list'] :
+        forecast_time = datetime.strptime(forecast['dt_txt'], '%Y-%m-%d %H:%M:%S')
+        if forecast_time >= target_time :
+            return forecast
+
+    return None
+
+
+def get_temperature(date_time) :
+    data = get_weather_data()
+    if data :
+        closest_forecast = get_closest_forecast(date_time, data)
+        if closest_forecast :
+            temperature = closest_forecast['main']['temp']
+            return temperature
+        else :
+            print("Data not found for the specified date and time.")
+            return None
+
+
+def get_wind_speed(date_time) :
+    data = get_weather_data()
+    if data :
+        closest_forecast = get_closest_forecast(date_time, data)
+        if closest_forecast :
+            wind_speed = closest_forecast['wind']['speed']
+            return wind_speed
+        else :
+            print("Data not found for the specified date and time.")
+            return None
+
+
+def get_pressure(date_time) :
+    data = get_weather_data()
+    if data :
+        closest_forecast = get_closest_forecast(date_time, data)
+        if closest_forecast :
+            pressure = closest_forecast['main']['pressure']
+            return pressure
+        else :
+            print("Data not found for the specified date and time.")
+            return None
+
+
+while True :
+    print("\nOptions:")
+    print("1. Get Temperature")
+    print("2. Get Wind Speed")
+    print("3. Get Pressure")
+    print("0. Exit")
+
+    choice = input("Enter your choice: ")
+
+    if choice == '1' :
+        date_time = input("Enter date and time (YYYY-MM-DD HH:MM:SS): ")
+        temperature = get_temperature(date_time)
+        if temperature is not None :
+            print(f"Temperature at {date_time}: {temperature} Kelvin")
+
+    elif choice == '2' :
+        date_time = input("Enter date and time (YYYY-MM-DD HH:MM:SS): ")
+        wind_speed = get_wind_speed(date_time)
+        if wind_speed is not None :
+            print(f"Wind Speed at {date_time}: {wind_speed} m/s")
+
+    elif choice == '3' :
+        date_time = input("Enter date and time (YYYY-MM-DD HH:MM:SS): ")
+        pressure = get_pressure(date_time)
+        if pressure is not None :
+            print(f"Pressure at {date_time}: {pressure} hPa")
+
+    elif choice == '0' :
+        print("Exiting the program.")
+        break
+
+    else :
+        print("Invalid choice. Please select a valid option.")
